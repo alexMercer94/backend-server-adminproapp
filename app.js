@@ -1,20 +1,27 @@
 // Requires
 const express = require('express');
-const mongoose = require('mongoose');
+const bodyParser = require('body-parser');
 
 // Init variables
 var app = express();
+
+// BodyParser
+// Parse application/x-www-form-urlencoded
+app.use(bodyParser.urlencoded({ extended: false }));
+app.use(bodyParser.json());
+
+//Import routes
+const appRoutes = require('./routes/app');
+const userRoutes = require('./routes/user');
+const loginRoutes = require('./routes/login');
 
 // Connection to Database
 require('./database');
 
 // Routes
-app.get('/', (req, res, next) => {
-    res.status(200).json({
-        ok: true,
-        message: 'Petición realizada correctamente'
-    });
-});
+app.use('/user', userRoutes);
+app.use('/login', loginRoutes);
+app.use('/', appRoutes);
 
 // Listen requests
 app.listen(3000, () => {
