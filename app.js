@@ -13,13 +13,23 @@ app.use(bodyParser.json());
 //Import routes
 const appRoutes = require('./routes/app');
 const userRoutes = require('./routes/user');
+const medicoRoutes = require('./routes/medico');
 const loginRoutes = require('./routes/login');
+const hospitalRoutes = require('./routes/hospital');
+const searchRoutes = require('./routes/search');
+const uploadRoutes = require('./routes/upload');
+const imagesRoutes = require('./routes/images');
 
 // Connection to Database
 require('./database');
 
 // Routes
 app.use('/user', userRoutes);
+app.use('/hospital', hospitalRoutes);
+app.use('/medico', medicoRoutes);
+app.use('/busqueda', searchRoutes);
+app.use('/upload', uploadRoutes);
+app.use('/img', imagesRoutes);
 app.use('/login', loginRoutes);
 app.use('/', appRoutes);
 
