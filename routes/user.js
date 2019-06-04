@@ -12,7 +12,7 @@ app.get('/', (req, res, next) => {
     let desde = req.query.desde || 0;
     desde = Number(desde);
 
-    User.find({}, 'name email img role')
+    User.find({}, 'name email img role google')
         .skip(desde)
         .limit(5)
         .exec((err, users) => {
@@ -38,7 +38,7 @@ app.get('/', (req, res, next) => {
 /**
  * Route to create a new user
  */
-app.post('/', mdAuth.verifyToken, (req, res) => {
+app.post('/', (req, res) => {
     const body = req.body;
 
     const user = new User({

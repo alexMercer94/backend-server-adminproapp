@@ -62,6 +62,38 @@ app.post('/', mdAuth.verifyToken, (req, res) => {
 });
 
 /**
+ * Route to get a hospital by ID
+ */
+app.get('/:id', (req, res) => {
+    const id = req.params.id;
+
+    Hospital.findById(id)
+        .populate('user', 'name img email')
+        .exec((err, hospital) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error al buscar hospotal',
+                    errors: err
+                });
+            }
+
+            if (!hospital) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'El hospital con el id ' + id + ' no existe',
+                    errors: { message: 'No existe un Hospital con ese ID' }
+                });
+            }
+
+            res.status(200).json({
+                ok: true,
+                hospital: hospital
+            });
+        });
+});
+
+/**
  * Route in order to update a hostpital
  */
 app.put('/:id', mdAuth.verifyToken, (req, res) => {

@@ -36,6 +36,39 @@ app.get('/', (req, res, next) => {
 });
 
 /**
+ * Get jus a doctor
+ */
+app.get('/:id', (req, res) => {
+    const id = req.params.id;
+
+    Medico.findById(id)
+        .populate('user', 'name email img')
+        .populate('hospital')
+        .exec((err, medico) => {
+            if (err) {
+                return res.status(500).json({
+                    ok: false,
+                    message: 'Error al buscar médico',
+                    errors: err
+                });
+            }
+
+            if (!medico) {
+                return res.status(400).json({
+                    ok: false,
+                    message: 'El médico con el id ' + id + ' no existe',
+                    errors: { message: 'No existe un médico con ese ID' }
+                });
+            }
+
+            res.status(200).json({
+                ok: true,
+                medico: medico
+            });
+        });
+});
+
+/**
  * Route to create a new doctor
  */
 app.post('/', mdAuth.verifyToken, (req, res) => {
