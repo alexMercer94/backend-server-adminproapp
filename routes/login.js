@@ -7,6 +7,7 @@ const { SEED } = require('../config/config');
 const { CLIENT_ID } = require('../config/config');
 const client = new OAuth2Client(CLIENT_ID);
 
+const mdAuth = require('../middlewares/auth');
 const app = express();
 
 async function verify(token) {
@@ -29,6 +30,18 @@ async function verify(token) {
         google: true
     };
 }
+
+/**
+ * Renew User's tokens
+ */
+app.get('/renewtoken', mdAuth.verifyToken, (req, res) => {
+    const token = jwt.sign({ user: req.user }, SEED, { expiresIn: 14400 }); // Duración de 4 horas
+
+    res.status(200).json({
+        ok: true,
+        token: token
+    });
+});
 
 /**
  * Route of Google Authentication
@@ -67,7 +80,8 @@ app.post('/google', async (req, res) => {
                     ok: true,
                     user: userDB,
                     token: token,
-                    id: userDB._id
+                    id: userDB._id,
+                    menu: getMenu(userDB.role)
                 });
             }
         } else {
@@ -80,23 +94,26 @@ app.post('/google', async (req, res) => {
             user.password = ':)';
 
             user.save((err, userDB) => {
+                if (err) {
+                    return res.status(500).json({
+                        ok: true,
+                        message: 'Error al crear usuario - Google',
+                        errors: err
+                    });
+                }
+
                 const token = jwt.sign({ user: userDB }, SEED, { expiresIn: 14400 }); // Duración de 4 horas
 
                 res.status(200).json({
                     ok: true,
                     user: userDB,
                     token: token,
-                    id: userDB._id
+                    id: userDB._id,
+                    menu: getMenu(userDB.role)
                 });
             });
         }
     });
-
-    // res.status(200).json({
-    //     ok: true,
-    //     message: 'OK',
-    //     googleUser
-    // });
 });
 
 /**
@@ -138,9 +155,45 @@ app.post('/', (req, res) => {
             ok: true,
             user: userDB,
             token: token,
-            id: userDB._id
+            id: userDB._id,
+            menu: getMenu(userDB.role)
         });
     });
 });
+
+/**
+ * Get menu and return it to use un Front End Side
+ * @param {*} ROLE User's Role
+ */
+function getMenu(ROLE) {
+    const menu = [
+        {
+            title: 'Principal',
+            icon: 'mdi mdi-gauge',
+            submenu: [
+                { title: 'Dashboard', url: '/dashboard' },
+                { title: 'ProgressBar', url: '/progress' },
+                { title: 'Gráficas', url: '/charts1' },
+                { title: 'Promesas', url: '/promises' },
+                { title: 'RxJs', url: '/rxjs' }
+            ]
+        },
+        {
+            title: 'Mantenimiento',
+            icon: 'mdi mdi-folder-lock-open',
+            submenu: [
+                // { title: 'Usuarios', url: '/users' },
+                { title: 'Hospitales', url: '/hospitals' },
+                { title: 'Médicos', url: '/medicos' }
+            ]
+        }
+    ];
+
+    if (ROLE === 'ADMIN_ROLE') {
+        menu[1].submenu.unshift({ title: 'Usuarios', url: '/users' });
+    }
+
+    return menu;
+}
 
 module.exports = app;

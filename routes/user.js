@@ -69,7 +69,7 @@ app.post('/', (req, res) => {
 /**
  * Route in order to update user
  */
-app.put('/:id', mdAuth.verifyToken, (req, res) => {
+app.put('/:id', [mdAuth.verifyToken, mdAuth.verifyAdminOrSameUser], (req, res) => {
     const id = req.params.id;
     const body = req.body;
 
@@ -116,7 +116,7 @@ app.put('/:id', mdAuth.verifyToken, (req, res) => {
 /**
  * Route in order to delete an user
  */
-app.delete('/:id', mdAuth.verifyToken, (req, res) => {
+app.delete('/:id', [mdAuth.verifyToken, mdAuth.verifyAdminRole], (req, res) => {
     const id = req.params.id;
 
     User.findByIdAndRemove(id, (err, userDeleted) => {
